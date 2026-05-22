@@ -30,6 +30,7 @@ type EnrollmentWithCourse = {
 };
 
 type RecommendationResult = {
+  courseId?: number;
   course: {
     name: string;
     category?: string | null;
@@ -39,48 +40,85 @@ type RecommendationResult = {
   reasons: string[];
   eligible: boolean;
   blockingReasons: string[];
+  policyRestrictions?: string[];
 };
+
+function joinReasons(reasons: string[]) {
+  return reasons.map((reason) => `- ${reason}`).join('\n');
+}
 
 function formatRecommendationMessage(recommendations: RecommendationResult[]) {
   if (recommendations.length === 0) {
-    return 'I could not find available recommendations right now. You can ask me to list active courses instead.';
+    return 'No encontré cursos recomendados por ahora. Si quieres, puedo mostrarte los cursos activos disponibles.';
   }
 
   const eligible = recommendations.filter((item) => item.eligible);
-  const top = (eligible.length > 0 ? eligible : recommendations).slice(0, 5);
-  const preview = top.slice(0, 5).map((item, index) => {
+  const blocked = recommendations.filter((item) => !item.eligible);
+
+  const actionablePreview = eligible.slice(0, 5).map((item, index) => {
     const details = [item.course.category, item.course.modality, item.course.minimumRequiredLevel]
       .filter(Boolean)
       .join(' · ');
-    const reason = item.reasons[0] ?? (item.eligible ? 'Good overall fit' : item.blockingReasons[0] ?? 'Needs policy validation');
+    const reason = item.reasons[0] ?? 'Buena opción para tu perfil actual';
     return `${index + 1}. ${item.course.name}${details ? ` (${details})` : ''} — ${reason}.`;
   });
 
-  const headline = eligible.length > 0
-    ? `I found ${recommendations.length} recommendation candidates (${eligible.length} currently eligible).`
-    : `I found ${recommendations.length} recommendation candidates, but they currently have policy restrictions.`;
+  const blockedPreview = blocked.slice(0, 5).map((item, index) => {
+    const details = [item.course.category, item.course.modality, item.course.minimumRequiredLevel]
+      .filter(Boolean)
+      .join(' · ');
+    const restrictions = item.policyRestrictions ?? item.blockingReasons;
+    const reason = restrictions[0] ?? 'No cumple condiciones de política en este momento';
+    return `${index + 1}. ${item.course.name}${details ? ` (${details})` : ''} — ${reason}.`;
+  });
 
-  return `${headline}\n${preview.join('\n')}\nNext step: tell me "Enroll me in <course name>" and I will validate policy and create the enrollment if eligible.`;
+  const commonRestrictions = blocked.length > 0
+    ? blocked
+      .map((item) => new Set((item.policyRestrictions ?? item.blockingReasons).filter(Boolean)))
+      .reduce<string[]>((common, restrictionSet, index) => {
+      if (index === 0) return Array.from(restrictionSet);
+      return common.filter((reason) => restrictionSet.has(reason));
+    }, [])
+    : [];
+
+  if (eligible.length === 0) {
+    const generalBlockMessage = commonRestrictions.length > 0
+      ? `No, por ahora no puedes inscribirte a ningún curso porque hay restricciones de política:\n${joinReasons(commonRestrictions)}`
+      : 'No, por ahora no puedes inscribirte a ningún curso porque todas las opciones relevantes están bloqueadas por restricciones de política.';
+
+    const blockedSection = blockedPreview.length > 0
+      ? `\n\nCursos recomendados bloqueados por restricciones de política:\n${blockedPreview.join('\n')}`
+      : '';
+
+    return `${generalBlockMessage}${blockedSection}`;
+  }
+
+  const actionableSection = `Encontré cursos recomendados para tu perfil:\n${actionablePreview.join('\n')}`;
+  const blockedSection = blockedPreview.length > 0
+    ? `\n\nCursos recomendados bloqueados por restricciones de política:\n${blockedPreview.join('\n')}`
+    : '';
+
+  return `${actionableSection}${blockedSection}\n\nSiguiente paso: escribe "Inscríbeme al curso <nombre del curso>" y validaré las restricciones de política antes de confirmar.`;
 }
 
 function formatActiveEnrollmentsMessage(enrollments: EnrollmentWithCourse[]) {
   if (enrollments.length === 0) {
-    return 'You currently have no active enrollments. If you want, ask me for course recommendations.';
+    return 'Estas son tus inscripciones activas: no tienes inscripciones activas en este momento.';
   }
 
   const preview = enrollments.slice(0, 5).map((item, index) => `${index + 1}. ${item.course.name}`).join('\n');
-  const suffix = enrollments.length > 5 ? `\nAnd ${enrollments.length - 5} more.` : '';
-  return `You have ${enrollments.length} active enrollment${enrollments.length === 1 ? '' : 's'}:\n${preview}${suffix}\nYou can ask me to complete or cancel any of these by course name.`;
+  const suffix = enrollments.length > 5 ? `\nY ${enrollments.length - 5} más.` : '';
+  return `Estas son tus inscripciones activas:\n${preview}${suffix}`;
 }
 
 function formatCompletedCoursesMessage(enrollments: EnrollmentWithCourse[]) {
   if (enrollments.length === 0) {
-    return 'You have not completed courses yet. I can recommend a good next course if you want.';
+    return 'Estos son los cursos que ya completaste: todavía no has completado cursos.';
   }
 
   const preview = enrollments.slice(0, 5).map((item, index) => `${index + 1}. ${item.course.name}`).join('\n');
-  const suffix = enrollments.length > 5 ? `\nAnd ${enrollments.length - 5} more completed course${enrollments.length - 5 === 1 ? '' : 's'}.` : '';
-  return `Great progress — you have completed ${enrollments.length} course${enrollments.length === 1 ? '' : 's'}:\n${preview}${suffix}`;
+  const suffix = enrollments.length > 5 ? `\nY ${enrollments.length - 5} cursos completados más.` : '';
+  return `Estos son los cursos que ya completaste:\n${preview}${suffix}`;
 }
 
 function extractFirstJsonObject(raw: string): unknown | null {
@@ -188,7 +226,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
   const resultByIntent: Record<AgentIntent, () => Promise<{ action: AgentAction; message: string; result: unknown }>> = {
     list_courses: async () => {
       const courses = await getAllCourses({});
-      return { action: 'list_courses', message: `Found ${courses.length} courses.`, result: courses };
+      return { action: 'list_courses', message: `Encontré ${courses.length} cursos disponibles.`, result: courses };
     },
     get_active_enrollments: async () => {
       const enrollments = await getCollaboratorActiveEnrollments(input.collaboratorId);
@@ -218,7 +256,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       if (!parameters.courseName) {
         return {
           action: 'clarify_intent',
-          message: 'Please tell me the course name to enroll.',
+          message: 'Claro. ¿A qué curso te gustaría inscribirte?',
           result: null
         };
       }
@@ -227,7 +265,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       if (!course) {
         return {
           action: 'clarify_intent',
-          message: `I could not find a course matching "${parameters.courseName}". Please provide the exact course name.`,
+          message: `No encontré un curso que coincida con "${parameters.courseName}". Por favor, comparte el nombre exacto del curso.`,
           result: null
         };
       }
@@ -236,14 +274,30 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
         const enrollment = await createEnrollment({ collaboratorId: input.collaboratorId, courseId: course.id });
         return {
           action: 'enroll_course',
-          message: `Done — your enrollment for ${course.name} is active now. You can ask me for your active enrollments anytime.`,
+          message: `Inscripción creada correctamente: te inscribiste en ${course.name}.`,
           result: enrollment
         };
       } catch (error) {
         if (error instanceof AppError) {
+          if (error.code === 'POLICY_REJECTION') {
+            const latestRecommendations = await getRecommendationsForCollaborator(input.collaboratorId);
+            const currentCourseState = latestRecommendations.find(
+              (item) => item.course.name.toLowerCase() === course.name.toLowerCase()
+            );
+
+            if (currentCourseState && !currentCourseState.eligible) {
+              const restrictions = currentCourseState.policyRestrictions ?? currentCourseState.blockingReasons;
+              return {
+                action: 'enroll_course',
+                message: `No puedo inscribirte en ${course.name} porque cambió su estado de elegibilidad desde la recomendación. Restricción actual: ${restrictions[0] ?? error.message}`,
+                result: null
+              };
+            }
+          }
+
           return {
             action: 'enroll_course',
-            message: `I couldn't enroll you in ${course.name}: ${error.message}`,
+            message: `No puedo inscribirte en ${course.name} porque ${error.message}.`,
             result: null
           };
         }
@@ -260,7 +314,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       if (!resolvedId) {
         return {
           action: 'clarify_intent',
-          message: 'Please provide an enrollment ID or an active course name to cancel.',
+          message: 'Por favor, indica un ID de inscripción o el nombre de un curso activo para cancelar la inscripción.',
           result: null
         };
       }
@@ -268,7 +322,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       const enrollment = await cancelEnrollment(resolvedId);
       return {
         action: 'cancel_enrollment',
-        message: `Enrollment ${resolvedId} cancelled successfully.`,
+        message: `Inscripción cancelada correctamente (ID ${resolvedId}).`,
         result: enrollment
       };
     },
@@ -281,7 +335,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       if (!resolvedId) {
         return {
           action: 'clarify_intent',
-          message: 'Please provide an enrollment ID or an active course name to complete.',
+          message: 'Por favor, indica un ID de inscripción o el nombre de un curso activo para marcarlo como completado.',
           result: null
         };
       }
@@ -289,14 +343,14 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       const enrollment = await completeEnrollment(resolvedId);
       return {
         action: 'complete_enrollment',
-        message: `Enrollment ${resolvedId} completed successfully.`,
+        message: `Inscripción completada correctamente (ID ${resolvedId}).`,
         result: enrollment
       };
     },
     unknown: async () => ({
       action: 'clarify_intent',
       message:
-        'I am not fully sure what action you want yet. You can ask me things like: recommended courses, active enrollments, completed courses, enroll, cancel, or complete an enrollment.',
+        'Puedes preguntarme cosas como: "¿Qué cursos me recomiendas?", "¿A qué cursos estoy inscrito?" o "Inscríbeme al curso React fundamentos".',
       result: null
     })
   };
@@ -368,17 +422,17 @@ export async function processAgentMessage(input: AgentMessageInput): Promise<Age
       detectedIntent: undefined,
       model: completion.model,
       usage: completion.usage,
-      response: 'Failed to parse model JSON output.',
+      response: 'No pude procesar la salida JSON del modelo.',
       success: false,
-      errorMessage: 'Model returned invalid JSON output.'
+      errorMessage: 'El modelo devolvió un JSON inválido.'
     });
-    throw new AppError('Model returned invalid JSON output.', 502, 'AgentInvalidModelOutput');
+    throw new AppError('No pude procesar tu solicitud. Intenta de nuevo o reformula tu mensaje.', 502, 'AgentInvalidModelOutput');
   }
 
   if (intentPayload.intent === 'unknown' || intentPayload.confidence === 'low') {
-    const clarification = intentPayload.clarificationQuestion?.trim() || 'Can you clarify what action you want?';
     const data: AgentMessageData = {
-      message: `${clarification} For example, you can ask: "Recommend courses", "Show active enrollments", or "Enroll me in <course name>".`,
+      message:
+        'Puedes preguntarme cosas como: "¿Qué cursos me recomiendas?", "¿A qué cursos estoy inscrito?" o "Inscríbeme al curso React fundamentos".',
       intent: 'unknown',
       action: 'clarify_intent',
       result: null,

@@ -4,7 +4,7 @@ import { SUPPORTED_INTENTS } from './agent.types';
 
 export const postAgentMessageSchema = z.object({
   collaboratorId: z.number().int().positive(),
-  message: z.string().trim().min(1, 'Message is required.')
+  message: z.string().trim().min(1, 'El mensaje es obligatorio.')
 });
 
 export type PostAgentMessageInput = z.infer<typeof postAgentMessageSchema>;

@@ -1,6 +1,8 @@
 export function buildIntentClassificationPrompt(input: { collaboratorId: number; message: string }) {
   const systemPrompt = [
     'You are an intent classifier for an employee training backend.',
+    'The user writes in Spanish and all user-visible text must stay in neutral Spanish.',
+    'If you provide clarificationQuestion, write it ONLY in neutral Spanish (no English words).',
     'Return ONLY one valid JSON object.',
     'Do not include markdown, code fences, comments, preambles, explanations, or trailing text.',
     'Never invent data. Only classify intent and extract parameters from the provided user message.',

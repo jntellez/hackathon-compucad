@@ -29,34 +29,34 @@ export function getEnrollmentPolicyBlockingReasons(
   const blockingReasons: string[] = [];
 
   if (context.collaborator.status !== 'ACTIVE') {
-    blockingReasons.push('Collaborator is inactive.');
+    blockingReasons.push('Tu estado como colaborador no está activo.');
   }
 
   const now = new Date();
   const hireDate = new Date(context.collaborator.hireDate);
   const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
   if (hireDate > oneMonthAgo) {
-    blockingReasons.push('Collaborator does not meet the minimum seniority requirement (1 month).');
+    blockingReasons.push('Necesitas al menos 1 mes de antigüedad para inscribirte.');
   }
 
   if (context.course.status !== 'ACTIVE') {
-    blockingReasons.push('Course is archived.');
+    blockingReasons.push('El curso no está activo en este momento.');
   }
 
   if (levelValue(context.collaborator.position.level) < levelValue(context.course.minimumRequiredLevel)) {
-    blockingReasons.push('Collaborator level is lower than the course minimum required level.');
+    blockingReasons.push('Tu nivel actual es menor al nivel mínimo requerido por el curso.');
   }
 
   if (context.activeCollaboratorEnrollments >= 3) {
-    blockingReasons.push('Collaborator already has 3 active enrollments.');
+    blockingReasons.push('Ya tienes 3 inscripciones activas (máximo permitido).');
   }
 
   if (context.activeCourseEnrollments >= context.course.maxCapacity) {
-    blockingReasons.push('Course has no available capacity.');
+    blockingReasons.push('El curso no tiene cupo disponible en este momento.');
   }
 
   if (context.hasActiveEnrollmentForCourse) {
-    blockingReasons.push('Collaborator already has an active enrollment for this course.');
+    blockingReasons.push('Ya tienes una inscripción activa para este curso.');
   }
 
   return blockingReasons;
@@ -72,7 +72,7 @@ export async function validateEnrollmentPolicy(
     include: { position: true }
   });
   if (!collaborator) {
-    throw new AppError('Collaborator not found.', 400, 'POLICY_REJECTION');
+    throw new AppError('No se encontró el colaborador.', 400, 'POLICY_REJECTION');
   }
 
   // 2. Course must exist
@@ -80,7 +80,7 @@ export async function validateEnrollmentPolicy(
     where: { id: courseId }
   });
   if (!course) {
-    throw new AppError('Course not found.', 400, 'POLICY_REJECTION');
+    throw new AppError('No se encontró el curso.', 400, 'POLICY_REJECTION');
   }
 
   const activeEnrollments = await prisma.enrollment.count({

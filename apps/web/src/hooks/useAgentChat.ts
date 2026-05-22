@@ -9,6 +9,7 @@ type UseAgentChatOptions = {
 };
 
 export function useAgentChat({ collaboratorId, onAgentSuccess }: UseAgentChatOptions) {
+  const loadingMessageId = 'loading-message';
   const [messages, setMessages] = useState<AgentChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,13 @@ export function useAgentChat({ collaboratorId, onAgentSuccess }: UseAgentChatOpt
       text: content
     };
 
-    setMessages((current) => [...current, userMessage]);
+    const loadingMessage: AgentChatMessage = {
+      id: loadingMessageId,
+      role: 'agent',
+      text: 'El agente está analizando tu solicitud...'
+    };
+
+    setMessages((current) => [...current, userMessage, loadingMessage]);
     setInput('');
     setError(null);
     setLoading(true);
@@ -56,10 +63,14 @@ export function useAgentChat({ collaboratorId, onAgentSuccess }: UseAgentChatOpt
         usage: data.usage
       };
 
-      setMessages((current) => [...current, agentMessage]);
+      setMessages((current) => {
+        const messagesWithoutLoading = current.filter((message) => message.id !== loadingMessageId);
+        return [...messagesWithoutLoading, agentMessage];
+      });
       await onAgentSuccess?.();
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : 'Failed to send message to agent';
+      const message = cause instanceof Error ? cause.message : 'No pude enviar tu mensaje al agente.';
+      setMessages((current) => current.filter((chatMessage) => chatMessage.id !== loadingMessageId));
       setError(message);
     } finally {
       setLoading(false);

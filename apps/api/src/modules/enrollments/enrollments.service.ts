@@ -18,10 +18,10 @@ export async function createEnrollment(input: CreateEnrollmentInput) {
 export async function cancelEnrollment(id: number) {
   const enrollment = await findEnrollmentById(id);
   if (!enrollment) {
-    throw new AppError('Enrollment not found.', 404);
+    throw new AppError('No se encontró la inscripción.', 404);
   }
   if (enrollment.status !== 'ACTIVE') {
-    throw new AppError('Only active enrollments can be cancelled.', 400);
+    throw new AppError('Solo se pueden cancelar inscripciones activas.', 400);
   }
 
   return updateEnrollmentStatus(id, 'CANCELLED');
@@ -30,10 +30,10 @@ export async function cancelEnrollment(id: number) {
 export async function completeEnrollment(id: number) {
   const enrollment = await findEnrollmentById(id);
   if (!enrollment) {
-    throw new AppError('Enrollment not found.', 404);
+    throw new AppError('No se encontró la inscripción.', 404);
   }
   if (enrollment.status !== 'ACTIVE') {
-    throw new AppError('Only active enrollments can be completed.', 400);
+    throw new AppError('Solo se pueden completar inscripciones activas.', 400);
   }
 
   return completeEnrollmentAndAwardPoints(

@@ -126,40 +126,40 @@ export async function getRecommendationsForCollaborator(collaboratorId: number) 
       const interestMatches = countMatches(interestTokens, courseTokens);
       if (interestMatches > 0) {
         score += 30;
-        reasons.push('Matches collaborator interests');
+        reasons.push('Coincide con tus intereses');
       }
 
       const areaMatches = countMatches(areaTokens, courseTokens);
       if (areaMatches > 0) {
         score += 18;
-        reasons.push('Aligned with collaborator area');
+        reasons.push('Está alineado con tu área');
       }
 
       const currentPositionMatches = countMatches(currentPositionTokens, courseTokens);
       if (currentPositionMatches > 0) {
         score += 20;
-        reasons.push('Supports current position skills');
+        reasons.push('Refuerza habilidades de tu puesto actual');
       }
 
       const nextPositionMatches = countMatches(nextPositionTokens, courseTokens);
       if (nextPositionMatches > 0) {
         score += 15;
-        reasons.push('Aligned with next career step');
+        reasons.push('Aporta para tu próximo paso de carrera');
       }
 
       const currentLevel = collaborator.position.level;
       const courseLevel = course.minimumRequiredLevel;
       if (courseLevel === currentLevel) {
         score += 10;
-        reasons.push('Matches collaborator level');
+        reasons.push('Tiene el nivel adecuado para tu perfil');
       } else if (levelValue(courseLevel) < levelValue(currentLevel)) {
         score += 5;
-        reasons.push('Within collaborator level range');
+        reasons.push('Está dentro de tu rango de nivel');
       }
 
       const pointsScore = scoreByPoints(course.pointsAwarded);
       score += pointsScore;
-      reasons.push(`Offers ${course.pointsAwarded} training points`);
+      reasons.push(`Te otorga ${course.pointsAwarded} puntos de capacitación`);
 
       const blockingReasons = getEnrollmentPolicyBlockingReasons({
         collaborator,
@@ -174,7 +174,8 @@ export async function getRecommendationsForCollaborator(collaboratorId: number) 
         score,
         eligible: blockingReasons.length === 0,
         reasons,
-        blockingReasons
+        blockingReasons,
+        policyRestrictions: blockingReasons
       };
     })
     .sort((a, b) => {
