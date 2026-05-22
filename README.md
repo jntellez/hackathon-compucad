@@ -68,7 +68,13 @@ hackathon-compucad/
    pnpm db:migrate
    ```
 
-7. Start both applications:
+7. Seed the database from the Excel import source:
+
+   ```bash
+   pnpm db:seed
+   ```
+
+8. Start both applications:
 
    ```bash
    pnpm dev
@@ -83,7 +89,8 @@ pnpm dev:api      # Run backend only
 pnpm db:up        # Start PostgreSQL container
 pnpm db:down      # Stop containers
 pnpm db:migrate   # Run Prisma migrate dev
-pnpm db:seed      # Run placeholder seed script
+pnpm db:reset     # Reset the database and rerun seed
+pnpm db:seed      # Import Excel data into PostgreSQL
 pnpm db:studio    # Open Prisma Studio
 pnpm build        # Build all workspace packages
 pnpm typecheck    # Type-check all workspace packages

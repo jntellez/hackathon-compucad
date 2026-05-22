@@ -6,5 +6,151 @@ datasource db {
   provider = "postgresql"
 }
 
-// The initial scaffold keeps the schema intentionally empty.
-// Add models here when the domain is defined.
+enum EmployeeStatus {
+  ACTIVE   @map("Activo")
+  INACTIVE @map("Inactivo")
+
+  @@map("employee_status")
+}
+
+enum EnrollmentStatus {
+  ACTIVE    @map("Activa")
+  CANCELLED @map("Cancelada")
+  COMPLETED @map("Completada")
+
+  @@map("enrollment_status")
+}
+
+enum Level {
+  JUNIOR @map("Junior")
+  MID    @map("Mid")
+  SENIOR @map("Senior")
+
+  @@map("level")
+}
+
+enum WorkMode {
+  HYBRID @map("Híbrido")
+  ONSITE @map("Presencial")
+  REMOTE @map("Remoto")
+
+  @@map("work_mode")
+}
+
+enum CourseStatus {
+  ACTIVE   @map("Activo")
+  ARCHIVED @map("Archivado")
+
+  @@map("course_status")
+}
+
+enum CourseModality {
+  HYBRID @map("Híbrido")
+  ONLINE @map("Online")
+  ONSITE @map("Presencial")
+
+  @@map("course_modality")
+}
+
+model Area {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  positions     Position[]
+  collaborators Collaborator[]
+
+  @@map("areas")
+}
+
+model Position {
+  id                Int            @id @default(autoincrement())
+  name              String
+  level             Level
+  areaId            Int            @map("area_id")
+  description       String         @db.Text
+  responsibilities  String         @db.Text
+  tools             String         @db.Text
+  keySkills         String         @map("key_skills") @db.Text
+  nextPositionId    Int?           @map("next_position_id")
+  area              Area           @relation(fields: [areaId], references: [id])
+  nextPosition      Position?      @relation("CareerPath", fields: [nextPositionId], references: [id])
+  previousPositions Position[]     @relation("CareerPath")
+  collaborators     Collaborator[]
+
+  @@index([areaId])
+  @@map("positions")
+}
+
+model Collaborator {
+  id                Int                @id @default(autoincrement())
+  name              String
+  email             String             @unique
+  positionId        Int                @map("position_id")
+  areaId            Int                @map("area_id")
+  hireDate          DateTime           @map("hire_date") @db.Date
+  status            EmployeeStatus
+  score             Int
+  yearsExperience   Int                @map("years_experience")
+  englishLevel      String             @map("english_level")
+  city              String
+  workMode          WorkMode           @map("work_mode")
+  interests         String             @db.Text
+  position          Position           @relation(fields: [positionId], references: [id])
+  area              Area               @relation(fields: [areaId], references: [id])
+  enrollments       Enrollment[]
+  agentInteractions AgentInteraction[]
+
+  @@index([status])
+  @@index([positionId])
+  @@index([areaId])
+  @@map("collaborators")
+}
+
+model Course {
+  id                   Int            @id @default(autoincrement())
+  name                 String
+  category             String
+  provider             String
+  modality             CourseModality
+  courseLevel          String         @map("course_level")
+  durationHours        Int            @map("duration_hours")
+  maxCapacity          Int            @map("max_capacity")
+  status               CourseStatus
+  minimumRequiredLevel Level          @map("minimum_required_level")
+  cost                 Int
+  pointsAwarded        Int            @map("points_awarded")
+  enrollments          Enrollment[]
+
+  @@index([status])
+  @@map("courses")
+}
+
+model Enrollment {
+  id             Int              @id @default(autoincrement())
+  collaboratorId Int              @map("collaborator_id")
+  courseId       Int              @map("course_id")
+  enrolledAt     DateTime         @map("enrolled_at") @db.Date
+  status         EnrollmentStatus
+  grade          Float?
+  collaborator   Collaborator     @relation(fields: [collaboratorId], references: [id])
+  course         Course           @relation(fields: [courseId], references: [id])
+
+  @@index([collaboratorId])
+  @@index([courseId])
+  @@index([status])
+  @@map("enrollments")
+}
+
+model AgentInteraction {
+  id                String        @id @default(cuid())
+  collaboratorId    Int?          @map("collaborator_id")
+  userMessage       String        @map("user_message") @db.Text
+  detectedIntent    String?       @map("detected_intent")
+  assistantResponse String?       @map("assistant_response") @db.Text
+  metadata          Json?
+  createdAt         DateTime      @default(now()) @map("created_at")
+  collaborator      Collaborator? @relation(fields: [collaboratorId], references: [id])
+
+  @@index([collaboratorId])
+  @@index([createdAt])
+  @@map("agent_interactions")
+}
