@@ -132,12 +132,6 @@ function toCourseModality(value: unknown) {
   throw new Error(`Unsupported course modality: ${normalized}`);
 }
 
-async function syncSequence(tableName: string) {
-  await prisma.$executeRawUnsafe(
-    `SELECT setval(pg_get_serial_sequence('"${tableName}"', 'id'), COALESCE(MAX(id), 1), true) FROM "${tableName}";`
-  );
-}
-
 async function main() {
   const areas = readSheet('Áreas').map((row) => ({
     id: toInt(row.id),
@@ -225,14 +219,6 @@ async function main() {
   await prisma.course.createMany({ data: courses });
   await prisma.collaborator.createMany({ data: collaborators });
   await prisma.enrollment.createMany({ data: enrollments });
-
-  await Promise.all([
-    syncSequence('areas'),
-    syncSequence('positions'),
-    syncSequence('courses'),
-    syncSequence('collaborators'),
-    syncSequence('enrollments')
-  ]);
 
   console.log(
     `Seeded ${areas.length} areas, ${positions.length} positions, ${collaborators.length} collaborators, ${courses.length} courses, and ${enrollments.length} enrollments.`

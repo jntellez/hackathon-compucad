@@ -4,14 +4,14 @@ Initial monorepo scaffold for an individual hackathon project focused on an AI t
 
 ## Project overview
 
-This repository provides a clean foundation for building the Compucad Training Agent. The current scope is intentionally limited to the project structure, developer tooling, backend and frontend setup, database container, and documentation.
+This repository provides a clean foundation for building the Compucad Training Agent. The current scope is intentionally limited to the project structure, developer tooling, backend and frontend setup, local SQLite database, and documentation.
 
 ## Tech stack
 
 - Monorepo: pnpm workspaces
 - Frontend: React + Vite + TypeScript + TailwindCSS
 - Backend: Node.js + Express + TypeScript
-- Database: PostgreSQL with Docker Compose
+- Database: SQLite (local file, no Docker required)
 - ORM: Prisma
 - Shared package: TypeScript
 - Documentation: Markdown + Mermaid
@@ -42,7 +42,7 @@ hackathon-compucad/
    nvm use
    ```
 
-   If you do not use nvm, install a compatible runtime manually.
+   If you do not use nvm, install a compatible version manually.
 
 3. Copy the environment files for each app:
 
@@ -56,25 +56,13 @@ hackathon-compucad/
    pnpm install
    ```
 
-5. Start PostgreSQL:
+5. Create and seed the local SQLite database:
 
    ```bash
-   pnpm db:up
+   pnpm db:reset
    ```
 
-6. Generate the initial Prisma migration when the first data model is ready:
-
-   ```bash
-   pnpm db:migrate
-   ```
-
-7. Seed the database from the Excel import source:
-
-   ```bash
-   pnpm db:seed
-   ```
-
-8. Start both applications:
+6. Start both applications:
 
    ```bash
    pnpm dev
@@ -86,11 +74,9 @@ hackathon-compucad/
 pnpm dev          # Run web and api in parallel
 pnpm dev:web      # Run frontend only
 pnpm dev:api      # Run backend only
-pnpm db:up        # Start PostgreSQL container
-pnpm db:down      # Stop containers
 pnpm db:migrate   # Run Prisma migrate dev
 pnpm db:reset     # Reset the database and rerun seed
-pnpm db:seed      # Import Excel data into PostgreSQL
+pnpm db:seed      # Import Excel data into SQLite
 pnpm db:studio    # Open Prisma Studio
 pnpm build        # Build all workspace packages
 pnpm typecheck    # Type-check all workspace packages
@@ -98,11 +84,11 @@ pnpm typecheck    # Type-check all workspace packages
 
 ## Node version note
 
-The scaffold is configured for modern supported runtimes (`>=20.19.0`). Prisma was upgraded to the current major version and now uses `prisma.config.ts`, so the setup no longer depends on the older Node 22-only workaround.
+The scaffold is configured for modern supported runtimes (`>=20.19.0`).
 
-## Prisma note
+## Database note
 
-Prisma Client uses the Prisma 7 PostgreSQL driver adapter in the API runtime. Root `db:*` commands use `scripts/prisma-cli.sh` so Prisma CLI commands run consistently against the Dockerized PostgreSQL setup.
+The project uses SQLite for local development and demos. This eliminates Docker dependencies and makes the setup more reliable for hackathon presentations. The Prisma schema and seed script are designed to be portable if a production database is needed later.
 
 ## Available documentation
 

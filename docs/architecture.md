@@ -14,11 +14,11 @@ flowchart LR
   Agent --> OpenRouter[OpenRouter]
   API --> Services[Business Services]
   Services --> Prisma[Prisma]
-  Prisma --> Postgres[PostgreSQL in Docker]
+  Prisma --> SQLite[SQLite file:./dev.db]
 ```
 
 ## Notes
 
 - The Agent Service and OpenRouter integration are intentionally deferred.
-- Business validations should remain deterministic in the backend.
-- Prisma is prepared with a PostgreSQL datasource, but the domain schema is not defined yet.
+- Business validations remain deterministic in the backend.
+- SQLite is used for local development and demos. The Prisma schema is portable to PostgreSQL if needed for production.

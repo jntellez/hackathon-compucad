@@ -6,16 +6,17 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  },
   "scripts": {
     "dev": "pnpm --parallel --filter @compucad/api --filter @compucad/web dev",
     "dev:web": "pnpm --filter @compucad/web dev",
     "dev:api": "pnpm --filter @compucad/api dev",
-    "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down",
-    "db:migrate": "./scripts/prisma-cli.sh migrate dev",
-    "db:reset": "./scripts/prisma-cli.sh migrate reset --force && ./scripts/prisma-cli.sh db seed",
-    "db:seed": "./scripts/prisma-cli.sh db seed",
-    "db:studio": "./scripts/prisma-studio.sh 5555",
+    "db:migrate": "pnpm --filter @compucad/api prisma migrate dev",
+    "db:reset": "pnpm --filter @compucad/api prisma migrate reset --force && pnpm --filter @compucad/api prisma db seed",
+    "db:seed": "pnpm --filter @compucad/api prisma db seed",
+    "db:studio": "pnpm --filter @compucad/api prisma studio",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "postinstall": "pnpm --filter @compucad/api prisma generate"

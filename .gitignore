@@ -6,4 +6,8 @@ dist/
 coverage/
 apps/api/generated/
 apps/api/prisma/dev.db
+apps/api/dev.db
+*.db-journal
 .atl/
+apps/api/prisma/migrations.bak/
+apps/api/.pnpm-store/

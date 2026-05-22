@@ -1,8 +1,12 @@
 # Technical decisions
 
-## Why Docker is used for PostgreSQL
+## Why SQLite is used for local development
 
-Docker Compose gives the project a repeatable local database environment with minimal setup friction. Every contributor can run the same PostgreSQL version and connection settings without manually installing or configuring a database server.
+SQLite eliminates Docker and PostgreSQL setup friction for local development and hackathon demos. The database lives in a single file (`apps/api/prisma/dev.db`), making the project instantly runnable with `pnpm install && pnpm db:reset`. The Prisma schema and seed script remain portable if a production PostgreSQL instance is needed later.
+
+## Why Docker was removed
+
+Docker Compose added unnecessary complexity for a local hackathon demo. PostgreSQL container setup caused authentication and volume persistence issues that slowed development. SQLite provides the same Prisma interface with zero infrastructure overhead.
 
 ## Why the project uses a monorepo
 

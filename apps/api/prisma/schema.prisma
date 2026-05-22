@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 enum EmployeeStatus {
@@ -66,10 +66,10 @@ model Position {
   name              String
   level             Level
   areaId            Int            @map("area_id")
-  description       String         @db.Text
-  responsibilities  String         @db.Text
-  tools             String         @db.Text
-  keySkills         String         @map("key_skills") @db.Text
+  description       String
+  responsibilities  String
+  tools             String
+  keySkills         String         @map("key_skills")
   nextPositionId    Int?           @map("next_position_id")
   area              Area           @relation(fields: [areaId], references: [id])
   nextPosition      Position?      @relation("CareerPath", fields: [nextPositionId], references: [id])
@@ -86,14 +86,14 @@ model Collaborator {
   email             String             @unique
   positionId        Int                @map("position_id")
   areaId            Int                @map("area_id")
-  hireDate          DateTime           @map("hire_date") @db.Date
+  hireDate          DateTime           @map("hire_date")
   status            EmployeeStatus
   score             Int
   yearsExperience   Int                @map("years_experience")
   englishLevel      String             @map("english_level")
   city              String
   workMode          WorkMode           @map("work_mode")
-  interests         String             @db.Text
+  interests         String
   position          Position           @relation(fields: [positionId], references: [id])
   area              Area               @relation(fields: [areaId], references: [id])
   enrollments       Enrollment[]
@@ -128,7 +128,7 @@ model Enrollment {
   id             Int              @id @default(autoincrement())
   collaboratorId Int              @map("collaborator_id")
   courseId       Int              @map("course_id")
-  enrolledAt     DateTime         @map("enrolled_at") @db.Date
+  enrolledAt     DateTime         @map("enrolled_at")
   status         EnrollmentStatus
   grade          Float?
   collaborator   Collaborator     @relation(fields: [collaboratorId], references: [id])
@@ -143,9 +143,9 @@ model Enrollment {
 model AgentInteraction {
   id                String        @id @default(cuid())
   collaboratorId    Int?          @map("collaborator_id")
-  userMessage       String        @map("user_message") @db.Text
+  userMessage       String        @map("user_message")
   detectedIntent    String?       @map("detected_intent")
-  assistantResponse String?       @map("assistant_response") @db.Text
+  assistantResponse String?       @map("assistant_response")
   metadata          Json?
   createdAt         DateTime      @default(now()) @map("created_at")
   collaborator      Collaborator? @relation(fields: [collaboratorId], references: [id])
