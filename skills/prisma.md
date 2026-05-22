@@ -6,16 +6,16 @@ Use these rules when modifying the Prisma schema, migrations, or seed scripts.
 
 ## Stack
 
-- PostgreSQL
+- SQLite (runtime)
 - Prisma ORM
 
 ## Rules
 
-- Model real persistence in PostgreSQL.
+- Model real persistence in SQLite through Prisma.
 - Use explicit relations.
 - Add indexes for frequent lookups.
 - Keep enum values aligned with source data.
-- Import or seed Excel data into PostgreSQL.
+- Import or seed Excel data into SQLite.
 - Do not read from Excel files at runtime.
 - Keep migrations clear and incremental.
 

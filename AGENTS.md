@@ -9,7 +9,7 @@ Hackathon Compucad is an individual project for an AI-assisted employee training
 - Monorepo with pnpm workspaces
 - Frontend: React + Vite + TypeScript + TailwindCSS
 - Backend: Node.js + Express + TypeScript
-- Database: PostgreSQL with Docker Compose
+- Database: SQLite (runtime local file, Docker not required)
 - ORM: Prisma
 - LLM provider: OpenRouter
 - Documentation: Markdown + Mermaid
@@ -32,7 +32,7 @@ Hackathon Compucad is an individual project for an AI-assisted employee training
   → Business service
   → Policy validation
   → Prisma repository
-  → PostgreSQL
+  → SQLite
   → User-facing response
 
 - Use this application layering:

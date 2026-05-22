@@ -20,6 +20,6 @@ Critical validations should not depend on a probabilistic model. The LLM can sup
 
 The Excel workbook is used only to bootstrap the initial domain data during the Prisma seed process. Keeping Excel out of the runtime path avoids fragile file dependencies in the application and makes the database model explicit and testable.
 
-## Why PostgreSQL is the runtime source of truth
+## Why SQLite is the runtime source of truth
 
-All runtime reads and writes must go through PostgreSQL via Prisma. This keeps collaborator, course, and enrollment data consistent across the API, future agent flows, and reporting logic without depending on a spreadsheet after setup.
+All runtime reads and writes currently go through SQLite via Prisma. This keeps collaborator, course, and enrollment data consistent across the API, future agent flows, and reporting logic without depending on a spreadsheet after setup.

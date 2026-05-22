@@ -27,7 +27,6 @@ hackathon-compucad/
 │  └─ shared/
 ├─ docs/
 ├─ scripts/
-├─ docker-compose.yml
 ├─ pnpm-workspace.yaml
 ├─ package.json
 └─ README.md
@@ -89,6 +88,8 @@ The scaffold is configured for modern supported runtimes (`>=20.19.0`).
 ## Database note
 
 The project uses SQLite for local development and demos. This eliminates Docker dependencies and makes the setup more reliable for hackathon presentations. The Prisma schema and seed script are designed to be portable if a production database is needed later.
+
+`docker-compose.yml` may remain in the repository as a legacy artifact, but it is not required for local development, demo flows, or runtime execution.
 
 ## Available documentation
 
