@@ -49,6 +49,14 @@ hackathon-compucad/
    cp apps/api/.env.example apps/api/.env
    cp apps/web/.env.example apps/web/.env
    ```
+
+   Then set your OpenRouter API key in `apps/api/.env`:
+
+   ```bash
+   OPENROUTER_API_KEY="<your-openrouter-key>"
+   # Optional override (default is a free model)
+   OPENROUTER_MODEL="mistralai/mistral-7b-instruct:free"
+   ```
 4. Install dependencies:
 
    ```bash

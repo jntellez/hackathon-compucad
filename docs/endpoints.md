@@ -339,3 +339,51 @@ Marks an active enrollment as completed. Sets status to `COMPLETED` and adds the
 | ------ | -------- | -------------------------------------- |
 | 404    | AppError | Enrollment not found.                  |
 | 400    | AppError | Only active enrollments can be completed. |
+
+---
+
+## Agent
+
+### POST /api/agent/message
+
+Classifies the collaborator message intent through OpenRouter and executes deterministic backend actions.
+
+#### Request Body
+
+```json
+{
+  "collaboratorId": 1,
+  "message": "Enroll me in React Advanced"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "message": "Enrollment created for React Advanced.",
+    "intent": "enroll_course",
+    "action": "enroll_course",
+    "result": {},
+    "usage": {
+      "promptTokens": 100,
+      "completionTokens": 40,
+      "totalTokens": 140
+    }
+  }
+}
+```
+
+#### Notes
+
+- Supported intents: `list_courses`, `get_active_enrollments`, `get_completed_courses`, `recommend_courses`, `enroll_course`, `cancel_enrollment`, `complete_enrollment`, `unknown`.
+- If the message is ambiguous, the API returns an intent clarification response instead of mutating data.
+- Intent extraction does not mutate the database directly; all actions are executed only by existing deterministic services.
+
+#### Error Responses
+
+| Status | Code                    | Message                                   |
+| ------ | ----------------------- | ----------------------------------------- |
+| 500    | OpenRouterConfigError   | Missing OPENROUTER_API_KEY configuration. |
+| 502    | AgentInvalidModelOutput | Model returned invalid JSON output.       |

@@ -145,7 +145,13 @@ model AgentInteraction {
   collaboratorId    Int?          @map("collaborator_id")
   userMessage       String        @map("user_message")
   detectedIntent    String?       @map("detected_intent")
+  model             String?
+  promptTokens      Int           @default(0) @map("prompt_tokens")
+  completionTokens  Int           @default(0) @map("completion_tokens")
+  totalTokens       Int           @default(0) @map("total_tokens")
   assistantResponse String?       @map("assistant_response")
+  success           Boolean       @default(true)
+  errorMessage      String?       @map("error_message")
   metadata          Json?
   createdAt         DateTime      @default(now()) @map("created_at")
   collaborator      Collaborator? @relation(fields: [collaboratorId], references: [id])
