@@ -1,0 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// The initial scaffold keeps the schema intentionally empty.
+// Add models here when the domain is defined.

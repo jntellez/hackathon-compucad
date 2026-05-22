@@ -1,0 +1,27 @@
+{
+  "name": "@compucad/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React frontend for the Compucad Training Agent project.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^6.0.2",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14"
+  }
+}

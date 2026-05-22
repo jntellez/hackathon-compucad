@@ -1,0 +1,16 @@
+{
+  "name": "@compucad/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared types and schemas for the Compucad Training Agent monorepo.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.3"
+  }
+}
