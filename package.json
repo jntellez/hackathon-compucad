@@ -14,7 +14,7 @@
     "db:down": "docker compose down",
     "db:migrate": "./scripts/prisma-cli.sh migrate dev",
     "db:seed": "./scripts/prisma-cli.sh db seed",
-    "db:studio": "./scripts/prisma-cli.sh studio --browser none --port 5555",
+    "db:studio": "pnpm --filter @compucad/api prisma studio --browser none --port 5555",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "postinstall": "pnpm --filter @compucad/api prisma generate"
