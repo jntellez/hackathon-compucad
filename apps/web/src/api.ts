@@ -69,6 +69,14 @@ export type Enrollment = {
   course: Course;
 };
 
+export type Recommendation = {
+  course: Course;
+  score: number;
+  eligible: boolean;
+  reasons: string[];
+  blockingReasons: string[];
+};
+
 type DataEnvelope<T> = { data: T };
 
 // --- API functions ---
@@ -87,6 +95,10 @@ export async function fetchActiveEnrollments(collaboratorId: number) {
 
 export async function fetchCompletedEnrollments(collaboratorId: number) {
   return request<DataEnvelope<Enrollment[]>>(`/api/collaborators/${collaboratorId}/history`);
+}
+
+export async function fetchRecommendations(collaboratorId: number) {
+  return request<DataEnvelope<Recommendation[]>>(`/api/collaborators/${collaboratorId}/recommendations`);
 }
 
 export async function createEnrollment(collaboratorId: number, courseId: number) {

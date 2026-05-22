@@ -8,9 +8,11 @@ import {
   fetchCollaborators,
   fetchCompletedEnrollments,
   fetchCourses,
+  fetchRecommendations,
   type Collaborator,
   type Course,
-  type Enrollment
+  type Enrollment,
+  type Recommendation
 } from './api';
 
 type Message = { type: 'success' | 'error'; text: string } | null;
@@ -23,6 +25,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [activeEnrollments, setActiveEnrollments] = useState<Enrollment[]>([]);
   const [completedEnrollments, setCompletedEnrollments] = useState<Enrollment[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [message, setMessage] = useState<Message>(null);
   const [loading, setLoading] = useState(false);
 
@@ -64,6 +67,20 @@ export default function App() {
       });
   }, [courses, search, filterCategory, filterLevel, filterModality]);
 
+  const refreshCollaboratorData = useCallback(async (collaboratorId: number) => {
+    const [activeRes, completedRes, recommendationRes] = await Promise.all([
+      fetchActiveEnrollments(collaboratorId),
+      fetchCompletedEnrollments(collaboratorId),
+      fetchRecommendations(collaboratorId)
+    ]);
+
+    return {
+      activeEnrollments: activeRes.data,
+      completedEnrollments: completedRes.data,
+      recommendations: recommendationRes.data
+    };
+  }, []);
+
   // Load initial data
   useEffect(() => {
     let cancelled = false;
@@ -89,23 +106,22 @@ export default function App() {
     if (!selectedId) {
       setActiveEnrollments([]);
       setCompletedEnrollments([]);
+      setRecommendations([]);
       return;
     }
     let cancelled = false;
     async function load() {
       setLoading(true);
       try {
-        const [activeRes, completedRes] = await Promise.all([
-          fetchActiveEnrollments(selectedId!),
-          fetchCompletedEnrollments(selectedId!)
-        ]);
+        const data = await refreshCollaboratorData(selectedId!);
         if (!cancelled) {
-          setActiveEnrollments(activeRes.data);
-          setCompletedEnrollments(completedRes.data);
+          setActiveEnrollments(data.activeEnrollments);
+          setCompletedEnrollments(data.completedEnrollments);
+          setRecommendations(data.recommendations);
         }
       } catch (err) {
         if (!cancelled) {
-          setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to load enrollments' });
+          setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to load collaborator data' });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -113,7 +129,7 @@ export default function App() {
     }
     void load();
     return () => { cancelled = true; };
-  }, [selectedId]);
+  }, [refreshCollaboratorData, selectedId]);
 
   const flash = useCallback((type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
@@ -125,12 +141,10 @@ export default function App() {
     try {
       await createEnrollment(selectedId, courseId);
       flash('success', 'Enrollment created successfully');
-      const [activeRes, completedRes] = await Promise.all([
-        fetchActiveEnrollments(selectedId),
-        fetchCompletedEnrollments(selectedId)
-      ]);
-      setActiveEnrollments(activeRes.data);
-      setCompletedEnrollments(completedRes.data);
+      const data = await refreshCollaboratorData(selectedId);
+      setActiveEnrollments(data.activeEnrollments);
+      setCompletedEnrollments(data.completedEnrollments);
+      setRecommendations(data.recommendations);
     } catch (err) {
       flash('error', err instanceof Error ? err.message : 'Enrollment failed');
     }
@@ -141,12 +155,10 @@ export default function App() {
     try {
       await cancelEnrollment(enrollmentId);
       flash('success', 'Enrollment cancelled');
-      const [activeRes, completedRes] = await Promise.all([
-        fetchActiveEnrollments(selectedId),
-        fetchCompletedEnrollments(selectedId)
-      ]);
-      setActiveEnrollments(activeRes.data);
-      setCompletedEnrollments(completedRes.data);
+      const data = await refreshCollaboratorData(selectedId);
+      setActiveEnrollments(data.activeEnrollments);
+      setCompletedEnrollments(data.completedEnrollments);
+      setRecommendations(data.recommendations);
     } catch (err) {
       flash('error', err instanceof Error ? err.message : 'Cancel failed');
     }
@@ -157,12 +169,10 @@ export default function App() {
     try {
       await completeEnrollment(enrollmentId);
       flash('success', 'Course completed! Points awarded');
-      const [activeRes, completedRes] = await Promise.all([
-        fetchActiveEnrollments(selectedId),
-        fetchCompletedEnrollments(selectedId)
-      ]);
-      setActiveEnrollments(activeRes.data);
-      setCompletedEnrollments(completedRes.data);
+      const data = await refreshCollaboratorData(selectedId);
+      setActiveEnrollments(data.activeEnrollments);
+      setCompletedEnrollments(data.completedEnrollments);
+      setRecommendations(data.recommendations);
     } catch (err) {
       flash('error', err instanceof Error ? err.message : 'Complete failed');
     }
@@ -317,8 +327,71 @@ export default function App() {
             </div>
           </section>
 
-          {/* Right: Enrollments */}
+          {/* Right: Recommendations and enrollments */}
           <section className="space-y-4">
+            {/* Recommendations */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-medium text-white">
+                Recommended Courses ({recommendations.length})
+              </h2>
+              {recommendations.length === 0 ? (
+                <p className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-500">
+                  {selected ? 'No recommendations available' : 'Select a collaborator to see recommendations'}
+                </p>
+              ) : (
+                <div className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
+                  {recommendations.slice(0, 8).map((recommendation) => {
+                    const enrolled = alreadyEnrolledCourseIds.has(recommendation.course.id);
+                    return (
+                      <div
+                        key={recommendation.course.id}
+                        className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-100">{recommendation.course.name}</p>
+                            <p className="text-xs text-slate-400">
+                              Score: {recommendation.score} &middot; {recommendation.eligible ? 'Eligible' : 'Blocked'}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!selected || enrolled || loading || !recommendation.eligible}
+                            onClick={() => handleEnroll(recommendation.course.id)}
+                            className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                              enrolled
+                                ? 'cursor-not-allowed bg-slate-800 text-slate-500'
+                                : !selected || !recommendation.eligible
+                                  ? 'cursor-not-allowed bg-slate-800 text-slate-600'
+                                  : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                            }`}
+                          >
+                            {enrolled ? 'Enrolled' : 'Enroll'}
+                          </button>
+                        </div>
+
+                        {recommendation.reasons.length > 0 && (
+                          <ul className="mt-2 space-y-1 text-xs text-emerald-300">
+                            {recommendation.reasons.map((reason) => (
+                              <li key={reason}>• {reason}</li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {recommendation.blockingReasons.length > 0 && (
+                          <ul className="mt-2 space-y-1 text-xs text-rose-300">
+                            {recommendation.blockingReasons.map((reason) => (
+                              <li key={reason}>• {reason}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Active enrollments */}
             <div className="space-y-2">
               <h2 className="text-lg font-medium text-white">

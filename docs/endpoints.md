@@ -197,6 +197,46 @@ Returns completed enrollments for the collaborator, including course information
 
 ---
 
+### GET /api/collaborators/:id/recommendations
+
+Returns deterministic course recommendations for the collaborator.
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "course": {
+        "id": 1,
+        "name": "React Advanced"
+      },
+      "score": 85,
+      "eligible": true,
+      "reasons": [
+        "Matches collaborator interests",
+        "Aligned with collaborator area"
+      ],
+      "blockingReasons": []
+    }
+  ]
+}
+```
+
+#### Notes
+
+- Only active courses are considered.
+- Completed courses and active enrollments are excluded.
+- Recommendations include explainable reasons and policy-based blocking reasons.
+
+#### Error Responses
+
+| Status | Code     | Message                 |
+| ------ | -------- | ----------------------- |
+| 404    | AppError | Collaborator not found. |
+
+---
+
 ## Enrollments
 
 ### POST /api/enrollments
