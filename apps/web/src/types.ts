@@ -54,6 +54,34 @@ export type Recommendation = {
 
 export type Message = { type: 'success' | 'error'; text: string } | null;
 
+export type AgentMessage = {
+  collaboratorId: number;
+  message: string;
+};
+
+export type AgentUsage = {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+};
+
+export type AgentResponse = {
+  message: string;
+  intent: string;
+  action: string;
+  result: unknown;
+  usage: AgentUsage;
+};
+
+export type AgentChatMessage = {
+  id: string;
+  role: 'user' | 'agent';
+  text: string;
+  intent?: string;
+  action?: string;
+  usage?: AgentUsage;
+};
+
 export type CourseFilters = {
   search: string;
   category: string;

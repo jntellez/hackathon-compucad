@@ -18,6 +18,71 @@ type AgentMessageInput = {
   message: string;
 };
 
+type EnrollmentWithCourse = {
+  id: number;
+  enrolledAt: Date;
+  course: {
+    name: string;
+    category?: string | null;
+    modality?: string | null;
+    minimumRequiredLevel?: string | null;
+  };
+};
+
+type RecommendationResult = {
+  course: {
+    name: string;
+    category?: string | null;
+    modality?: string | null;
+    minimumRequiredLevel?: string | null;
+  };
+  reasons: string[];
+  eligible: boolean;
+  blockingReasons: string[];
+};
+
+function formatRecommendationMessage(recommendations: RecommendationResult[]) {
+  if (recommendations.length === 0) {
+    return 'I could not find available recommendations right now. You can ask me to list active courses instead.';
+  }
+
+  const eligible = recommendations.filter((item) => item.eligible);
+  const top = (eligible.length > 0 ? eligible : recommendations).slice(0, 5);
+  const preview = top.slice(0, 5).map((item, index) => {
+    const details = [item.course.category, item.course.modality, item.course.minimumRequiredLevel]
+      .filter(Boolean)
+      .join(' · ');
+    const reason = item.reasons[0] ?? (item.eligible ? 'Good overall fit' : item.blockingReasons[0] ?? 'Needs policy validation');
+    return `${index + 1}. ${item.course.name}${details ? ` (${details})` : ''} — ${reason}.`;
+  });
+
+  const headline = eligible.length > 0
+    ? `I found ${recommendations.length} recommendation candidates (${eligible.length} currently eligible).`
+    : `I found ${recommendations.length} recommendation candidates, but they currently have policy restrictions.`;
+
+  return `${headline}\n${preview.join('\n')}\nNext step: tell me "Enroll me in <course name>" and I will validate policy and create the enrollment if eligible.`;
+}
+
+function formatActiveEnrollmentsMessage(enrollments: EnrollmentWithCourse[]) {
+  if (enrollments.length === 0) {
+    return 'You currently have no active enrollments. If you want, ask me for course recommendations.';
+  }
+
+  const preview = enrollments.slice(0, 5).map((item, index) => `${index + 1}. ${item.course.name}`).join('\n');
+  const suffix = enrollments.length > 5 ? `\nAnd ${enrollments.length - 5} more.` : '';
+  return `You have ${enrollments.length} active enrollment${enrollments.length === 1 ? '' : 's'}:\n${preview}${suffix}\nYou can ask me to complete or cancel any of these by course name.`;
+}
+
+function formatCompletedCoursesMessage(enrollments: EnrollmentWithCourse[]) {
+  if (enrollments.length === 0) {
+    return 'You have not completed courses yet. I can recommend a good next course if you want.';
+  }
+
+  const preview = enrollments.slice(0, 5).map((item, index) => `${index + 1}. ${item.course.name}`).join('\n');
+  const suffix = enrollments.length > 5 ? `\nAnd ${enrollments.length - 5} more completed course${enrollments.length - 5 === 1 ? '' : 's'}.` : '';
+  return `Great progress — you have completed ${enrollments.length} course${enrollments.length === 1 ? '' : 's'}:\n${preview}${suffix}`;
+}
+
 function extractFirstJsonObject(raw: string): unknown | null {
   const input = raw.trim();
 
@@ -129,7 +194,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       const enrollments = await getCollaboratorActiveEnrollments(input.collaboratorId);
       return {
         action: 'get_active_enrollments',
-        message: `Found ${enrollments.length} active enrollments.`,
+        message: formatActiveEnrollmentsMessage(enrollments),
         result: enrollments
       };
     },
@@ -137,7 +202,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       const history = await getCollaboratorCompletedEnrollments(input.collaboratorId);
       return {
         action: 'get_completed_courses',
-        message: `Found ${history.length} completed courses.`,
+        message: formatCompletedCoursesMessage(history),
         result: history
       };
     },
@@ -145,7 +210,7 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
       const recommendations = await getRecommendationsForCollaborator(input.collaboratorId);
       return {
         action: 'recommend_courses',
-        message: `Found ${recommendations.length} recommendation candidates.`,
+        message: formatRecommendationMessage(recommendations),
         result: recommendations
       };
     },
@@ -167,12 +232,24 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
         };
       }
 
-      const enrollment = await createEnrollment({ collaboratorId: input.collaboratorId, courseId: course.id });
-      return {
-        action: 'enroll_course',
-        message: `Enrollment created for ${course.name}.`,
-        result: enrollment
-      };
+      try {
+        const enrollment = await createEnrollment({ collaboratorId: input.collaboratorId, courseId: course.id });
+        return {
+          action: 'enroll_course',
+          message: `Done — your enrollment for ${course.name} is active now. You can ask me for your active enrollments anytime.`,
+          result: enrollment
+        };
+      } catch (error) {
+        if (error instanceof AppError) {
+          return {
+            action: 'enroll_course',
+            message: `I couldn't enroll you in ${course.name}: ${error.message}`,
+            result: null
+          };
+        }
+
+        throw error;
+      }
     },
     cancel_enrollment: async () => {
       const resolvedId = await resolveEnrollmentId(
@@ -218,7 +295,8 @@ async function executeIntent(input: AgentMessageInput, intent: AgentIntent, para
     },
     unknown: async () => ({
       action: 'clarify_intent',
-      message: 'I am not sure what you want to do. Please clarify your request.',
+      message:
+        'I am not fully sure what action you want yet. You can ask me things like: recommended courses, active enrollments, completed courses, enroll, cancel, or complete an enrollment.',
       result: null
     })
   };
@@ -300,7 +378,7 @@ export async function processAgentMessage(input: AgentMessageInput): Promise<Age
   if (intentPayload.intent === 'unknown' || intentPayload.confidence === 'low') {
     const clarification = intentPayload.clarificationQuestion?.trim() || 'Can you clarify what action you want?';
     const data: AgentMessageData = {
-      message: clarification,
+      message: `${clarification} For example, you can ask: "Recommend courses", "Show active enrollments", or "Enroll me in <course name>".`,
       intent: 'unknown',
       action: 'clarify_intent',
       result: null,

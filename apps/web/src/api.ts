@@ -1,4 +1,4 @@
-import type { Collaborator, Course, Enrollment, Recommendation } from './types';
+import type { AgentMessage, AgentResponse, Collaborator, Course, Enrollment, Recommendation } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
@@ -63,5 +63,13 @@ export async function cancelEnrollment(enrollmentId: number) {
 export async function completeEnrollment(enrollmentId: number) {
   return request<DataEnvelope<Enrollment>>(`/api/enrollments/${enrollmentId}/complete`, {
     method: 'POST'
+  });
+}
+
+export async function sendAgentMessage(collaboratorId: number, message: string) {
+  const payload: AgentMessage = { collaboratorId, message };
+  return request<DataEnvelope<AgentResponse>>('/api/agent/message', {
+    method: 'POST',
+    body: JSON.stringify(payload)
   });
 }

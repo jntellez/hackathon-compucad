@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { fetchCourses } from '../api';
 import type { Course } from '../types';
@@ -7,6 +7,12 @@ export function useCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    const response = await fetchCourses();
+    setCourses(response.data);
+    setError(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,5 +43,5 @@ export function useCourses() {
     };
   }, []);
 
-  return { courses, loading, error };
+  return { courses, loading, error, reload };
 }

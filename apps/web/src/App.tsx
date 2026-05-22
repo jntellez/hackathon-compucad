@@ -7,6 +7,7 @@ import { CourseList } from './components/CourseList';
 import { Layout } from './components/Layout';
 import { RecommendationsList } from './components/RecommendationsList';
 import { ActiveEnrollments } from './components/ActiveEnrollments';
+import { AgentChat } from './components/AgentChat';
 import { useTrainingDemo } from './hooks/useTrainingDemo';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
     recommendations,
     alreadyEnrolledCourseIds,
     loading,
+    handleAgentSuccess,
     handleEnroll,
     handleCancel,
     handleComplete
@@ -96,6 +98,12 @@ export default function App() {
           <CompletedHistory
             enrollments={completedEnrollments}
             hasSelection={!!selectedCollaborator}
+          />
+
+          <AgentChat
+            collaboratorId={selectedId}
+            collaboratorName={selectedCollaborator?.name}
+            onAgentSuccess={handleAgentSuccess}
           />
         </section>
       </div>

@@ -17,7 +17,7 @@ const defaultFilters: CourseFilters = {
 
 export function useTrainingDemo() {
   const { collaborators, loading: collaboratorsLoading, error: collaboratorsError } = useCollaborators();
-  const { courses, loading: coursesLoading, error: coursesError } = useCourses();
+  const { courses, loading: coursesLoading, error: coursesError, reload: reloadCourses } = useCourses();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [message, setMessage] = useState<Message>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -64,8 +64,12 @@ export function useTrainingDemo() {
 
   const refreshSelectedCollaboratorData = useCallback(async () => {
     if (!selectedId) return;
-    await Promise.all([reloadEnrollments(selectedId), reloadRecommendations(selectedId)]);
-  }, [reloadEnrollments, reloadRecommendations, selectedId]);
+    await Promise.all([reloadEnrollments(selectedId), reloadRecommendations(selectedId), reloadCourses()]);
+  }, [reloadCourses, reloadEnrollments, reloadRecommendations, selectedId]);
+
+  const handleAgentSuccess = useCallback(async () => {
+    await refreshSelectedCollaboratorData();
+  }, [refreshSelectedCollaboratorData]);
 
   const handleEnroll = useCallback(async (courseId: number) => {
     if (!selectedId) return;
@@ -137,6 +141,7 @@ export function useTrainingDemo() {
     recommendations,
     alreadyEnrolledCourseIds,
     loading,
+    handleAgentSuccess,
     handleEnroll,
     handleCancel,
     handleComplete
