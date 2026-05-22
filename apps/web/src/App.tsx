@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   cancelEnrollment,
@@ -15,6 +15,8 @@ import {
 
 type Message = { type: 'success' | 'error'; text: string } | null;
 
+const LEVELS = ['JUNIOR', 'MID', 'SENIOR'] as const;
+
 export default function App() {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -24,7 +26,43 @@ export default function App() {
   const [message, setMessage] = useState<Message>(null);
   const [loading, setLoading] = useState(false);
 
+  // Course filters
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterLevel, setFilterLevel] = useState('');
+  const [filterModality, setFilterModality] = useState('');
+
   const selected = collaborators.find((c) => c.id === selectedId) ?? null;
+
+  // Derive unique filter options from loaded courses
+  const categories = useMemo(() => {
+    const set = new Set(courses.map((c) => c.category));
+    return [...set].sort();
+  }, [courses]);
+
+  const modalities = useMemo(() => {
+    const set = new Set(courses.map((c) => c.modality));
+    return [...set].sort();
+  }, [courses]);
+
+  // Filtered courses
+  const filteredCourses = useMemo(() => {
+    const q = search.toLowerCase();
+    return courses
+      .filter((c) => c.status === 'ACTIVE')
+      .filter((c) => {
+        if (q && !(
+          c.name.toLowerCase().includes(q) ||
+          c.category.toLowerCase().includes(q) ||
+          c.provider.toLowerCase().includes(q) ||
+          c.modality.toLowerCase().includes(q)
+        )) return false;
+        if (filterCategory && c.category !== filterCategory) return false;
+        if (filterLevel && c.minimumRequiredLevel !== filterLevel) return false;
+        if (filterModality && c.modality !== filterModality) return false;
+        return true;
+      });
+  }, [courses, search, filterCategory, filterLevel, filterModality]);
 
   // Load initial data
   useEffect(() => {
@@ -87,7 +125,6 @@ export default function App() {
     try {
       await createEnrollment(selectedId, courseId);
       flash('success', 'Enrollment created successfully');
-      // Refresh enrollments
       const [activeRes, completedRes] = await Promise.all([
         fetchActiveEnrollments(selectedId),
         fetchCompletedEnrollments(selectedId)
@@ -132,6 +169,8 @@ export default function App() {
   };
 
   const alreadyEnrolledCourseIds = new Set(activeEnrollments.map((e) => e.courseId));
+
+  const filterSelectClass = 'rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-100 focus:border-emerald-500 focus:outline-none';
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50 sm:px-6">
@@ -195,26 +234,66 @@ export default function App() {
         {/* Main content: two columns */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: Available courses */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-medium text-white">Available Courses</h2>
-            <div className="space-y-2">
-              {courses
-                .filter((c) => c.status === 'ACTIVE')
-                .map((course) => {
+          <section className="flex flex-col">
+            <h2 className="mb-3 text-lg font-medium text-white">
+              Available Courses <span className="text-sm font-normal text-slate-500">({filteredCourses.length})</span>
+            </h2>
+
+            {/* Search + filters */}
+            <div className="mb-3 space-y-2">
+              <input
+                type="text"
+                placeholder="Search by name, category, provider, modality..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+              />
+              <div className="flex flex-wrap gap-2">
+                <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={filterSelectClass}>
+                  <option value="">All categories</option>
+                  {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+                <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className={filterSelectClass}>
+                  <option value="">All levels</option>
+                  {LEVELS.map((lv) => <option key={lv} value={lv}>{lv}</option>)}
+                </select>
+                <select value={filterModality} onChange={(e) => setFilterModality(e.target.value)} className={filterSelectClass}>
+                  <option value="">All modalities</option>
+                  {modalities.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+                {(search || filterCategory || filterLevel || filterModality) && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(''); setFilterCategory(''); setFilterLevel(''); setFilterModality(''); }}
+                    className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 hover:text-slate-200"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Scrollable course list */}
+            <div className="max-h-[480px] space-y-1.5 overflow-y-auto pr-1">
+              {filteredCourses.length === 0 ? (
+                <p className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-500">
+                  No courses match your filters.
+                </p>
+              ) : (
+                filteredCourses.map((course) => {
                   const enrolled = alreadyEnrolledCourseIds.has(course.id);
                   return (
                     <div
                       key={course.id}
-                      className="flex items-start justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900 p-3"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
                     >
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-100">{course.name}</p>
+                        <p className="truncate text-sm font-medium text-slate-100">{course.name}</p>
                         <p className="text-xs text-slate-400">
-                          {course.category} &middot; {course.modality} &middot; {course.durationHours}h &middot;{' '}
-                          {course.pointsAwarded} pts
+                          {course.category} &middot; {course.modality} &middot; {course.durationHours}h &middot; {course.pointsAwarded} pts
                         </p>
                         <p className="text-xs text-slate-500">
-                          Min level: {course.minimumRequiredLevel}
+                          Min: {course.minimumRequiredLevel}
                         </p>
                       </div>
                       <button
@@ -233,7 +312,8 @@ export default function App() {
                       </button>
                     </div>
                   );
-                })}
+                })
+              )}
             </div>
           </section>
 
