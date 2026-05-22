@@ -1,25 +1,21 @@
-# Technical decisions
+# Decisiones técnicas
 
-## Why SQLite is used for local development
+## 1) SQLite para desarrollo y demo
 
-SQLite eliminates Docker and PostgreSQL setup friction for local development and hackathon demos. The database lives in a single file (`apps/api/prisma/dev.db`), making the project instantly runnable with `pnpm install && pnpm db:reset`. The Prisma schema and seed script remain portable if a production PostgreSQL instance is needed later.
+Se usa SQLite para eliminar fricción de infraestructura (sin Docker obligatorio) y poder levantar el proyecto rápido con `pnpm install && pnpm db:reset`. La base vive en `apps/api/prisma/dev.db`.
 
-## Why Docker was removed
+## 2) Monorepo con pnpm workspaces
 
-Docker Compose added unnecessary complexity for a local hackathon demo. PostgreSQL container setup caused authentication and volume persistence issues that slowed development. SQLite provides the same Prisma interface with zero infrastructure overhead.
+Frontend, backend, contratos compartidos y docs conviven en un solo repositorio. Esto simplifica coordinación y acelera iteración para hackathon.
 
-## Why the project uses a monorepo
+## 3) Reglas críticas determinísticas en backend
 
-The monorepo keeps the frontend, backend, shared contracts, and documentation aligned in one place. For a hackathon, this reduces coordination overhead and makes it easier to evolve shared types and scripts without juggling multiple repositories.
+El modelo puede interpretar intención, pero la integridad de negocio no depende de una salida probabilística. Todas las validaciones de inscripción se ejecutan en servicios backend.
 
-## Why the backend will keep business rules deterministic
+## 4) Excel solo como fuente de carga inicial
 
-Critical validations should not depend on a probabilistic model. The LLM can support training interactions later, but the backend must remain the source of truth for business rules, workflows, and data integrity.
+El Excel se usa en el seed. En runtime, toda lectura/escritura pasa por Prisma + SQLite.
 
-## Why Excel is only an import source
+## 5) OpenRouter solo en servidor
 
-The Excel workbook is used only to bootstrap the initial domain data during the Prisma seed process. Keeping Excel out of the runtime path avoids fragile file dependencies in the application and makes the database model explicit and testable.
-
-## Why SQLite is the runtime source of truth
-
-All runtime reads and writes currently go through SQLite via Prisma. This keeps collaborator, course, and enrollment data consistent across the API, future agent flows, and reporting logic without depending on a spreadsheet after setup.
+La `OPENROUTER_API_KEY` se mantiene fuera del frontend. El backend encapsula la llamada al modelo y aplica controles antes de ejecutar acciones.

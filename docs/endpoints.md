@@ -1,249 +1,56 @@
-# Endpoints
+# Endpoints principales
 
-## GET /api/health
+Base URL local: `http://localhost:3000/api`
 
-Returns the current health status of the API.
+## Salud
 
-### Response
+### `GET /health`
 
-```json
-{
-  "status": "ok",
-  "service": "api",
-  "timestamp": "2026-05-21T12:00:00.000Z"
-}
-```
+Verifica que la API esté operativa.
 
-### Notes
+## Cursos
 
-- Intended for local smoke testing and environment validation.
-- Used by the frontend home screen to confirm backend connectivity.
+### `GET /courses`
 
----
+Lista cursos. Filtros opcionales por query:
 
-## Courses
+- `status`
+- `category`
+- `modality`
 
-### GET /api/courses
+### `GET /courses/:id`
 
-Returns all courses. Supports optional query filters.
+Obtiene un curso por ID.
 
-#### Query Parameters
+## Colaboradores
 
-| Parameter  | Type   | Required | Description                |
-| ---------- | ------ | -------- | -------------------------- |
-| `status`   | string | No       | Filter by course status    |
-| `category` | string | No       | Filter by course category  |
-| `modality` | string | No       | Filter by course modality  |
+### `GET /collaborators`
 
-#### Response
+Lista colaboradores con resumen de posición y área.
 
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "React Advanced",
-      "category": "Frontend",
-      "provider": "Udemy",
-      "modality": "ONLINE",
-      "courseLevel": "Advanced",
-      "durationHours": 40,
-      "maxCapacity": 30,
-      "status": "ACTIVE",
-      "minimumRequiredLevel": "MID",
-      "cost": 200,
-      "pointsAwarded": 500
-    }
-  ]
-}
-```
+### `GET /collaborators/:id`
 
----
+Obtiene un colaborador por ID.
 
-### GET /api/courses/:id
+### `GET /collaborators/:id/enrollments`
 
-Returns a single course by ID.
+Lista inscripciones activas del colaborador.
 
-#### Response
+### `GET /collaborators/:id/history`
 
-```json
-{
-  "data": {
-    "id": 1,
-    "name": "React Advanced",
-    "category": "Frontend",
-    ...
-  }
-}
-```
+Lista cursos completados del colaborador.
 
-#### Error Responses
+### `GET /collaborators/:id/recommendations`
 
-| Status | Code  | Message         |
-| ------ | ----- | --------------- |
-| 404    | AppError | Course not found. |
+Devuelve recomendaciones determinísticas de cursos.
 
----
+## Inscripciones
 
-## Collaborators
+### `POST /enrollments`
 
-### GET /api/collaborators
+Crea inscripción validando políticas de negocio en backend.
 
-Returns all collaborators with position and area summary.
-
-#### Response
-
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "position": { "id": 1, "name": "Developer", "level": "MID" },
-      "area": { "id": 1, "name": "Engineering" },
-      ...
-    }
-  ]
-}
-```
-
----
-
-### GET /api/collaborators/:id
-
-Returns a single collaborator by ID, including position and area.
-
-#### Response
-
-```json
-{
-  "data": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "position": { "id": 1, "name": "Developer", "level": "MID" },
-    "area": { "id": 1, "name": "Engineering" },
-    ...
-  }
-}
-```
-
-#### Error Responses
-
-| Status | Code  | Message              |
-| ------ | ----- | -------------------- |
-| 404    | AppError | Collaborator not found. |
-
----
-
-### GET /api/collaborators/:id/enrollments
-
-Returns active enrollments for the collaborator, including course information.
-
-#### Response
-
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "collaboratorId": 1,
-      "courseId": 2,
-      "enrolledAt": "2026-05-01",
-      "status": "ACTIVE",
-      "grade": null,
-      "course": { ... }
-    }
-  ]
-}
-```
-
-#### Error Responses
-
-| Status | Code  | Message              |
-| ------ | ----- | -------------------- |
-| 404    | AppError | Collaborator not found. |
-
----
-
-### GET /api/collaborators/:id/history
-
-Returns completed enrollments for the collaborator, including course information.
-
-#### Response
-
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "collaboratorId": 1,
-      "courseId": 2,
-      "enrolledAt": "2026-04-01",
-      "status": "COMPLETED",
-      "grade": 85.5,
-      "course": { ... }
-    }
-  ]
-}
-```
-
-#### Error Responses
-
-| Status | Code  | Message              |
-| ------ | ----- | -------------------- |
-| 404    | AppError | Collaborator not found. |
-
----
-
-### GET /api/collaborators/:id/recommendations
-
-Returns deterministic course recommendations for the collaborator.
-
-#### Response
-
-```json
-{
-  "data": [
-    {
-      "course": {
-        "id": 1,
-        "name": "React Advanced"
-      },
-      "score": 85,
-      "eligible": true,
-      "reasons": [
-        "Matches collaborator interests",
-        "Aligned with collaborator area"
-      ],
-      "blockingReasons": []
-    }
-  ]
-}
-```
-
-#### Notes
-
-- Only active courses are considered.
-- Completed courses and active enrollments are excluded.
-- Recommendations include explainable reasons and policy-based blocking reasons.
-
-#### Error Responses
-
-| Status | Code     | Message                 |
-| ------ | -------- | ----------------------- |
-| 404    | AppError | Collaborator not found. |
-
----
-
-## Enrollments
-
-### POST /api/enrollments
-
-Creates a new enrollment for a collaborator into a course. All business policy rules are validated before creation.
-
-#### Request Body
+Body:
 
 ```json
 {
@@ -252,138 +59,46 @@ Creates a new enrollment for a collaborator into a course. All business policy r
 }
 ```
 
-#### Response
+Errores típicos:
 
-```json
-{
-  "data": {
-    "id": 10,
-    "collaboratorId": 1,
-    "courseId": 2,
-    "enrolledAt": "2026-05-21",
-    "status": "ACTIVE",
-    "grade": null,
-    "collaborator": { ... },
-    "course": { ... }
-  }
-}
-```
+- `400 POLICY_REJECTION` (incumplimiento de reglas)
+- `400 AppError` (payload inválido)
 
-#### Error Responses
+### `POST /enrollments/:id/cancel`
 
-| Status | Code             | Message                                                                   |
-| ------ | ---------------- | ------------------------------------------------------------------------- |
-| 400    | POLICY_REJECTION | Any policy validation failure (see table below)                           |
-| 400    | AppError         | Invalid request body (Zod validation)                                     |
+Cancela una inscripción activa (`status = CANCELLED`).
 
-**Policy rejection messages:**
+### `POST /enrollments/:id/complete`
 
-| Message                                                                   |
-| ------------------------------------------------------------------------- |
-| Collaborator not found.                                                   |
-| Course not found.                                                         |
-| Collaborator is inactive.                                                 |
-| Collaborator does not meet the minimum seniority requirement (1 month).   |
-| Course is archived.                                                       |
-| Collaborator level is lower than the course minimum required level.       |
-| Collaborator already has 3 active enrollments.                            |
-| Course has no available capacity.                                         |
-| Collaborator already has an active enrollment for this course.            |
+Completa una inscripción activa (`status = COMPLETED`) y suma puntos al colaborador.
 
----
+## Agente IA
 
-### POST /api/enrollments/:id/cancel
+### `POST /agent/message`
 
-Cancels an active enrollment. Sets status to `CANCELLED`.
+Interpreta el mensaje con OpenRouter y delega la ejecución a servicios determinísticos.
 
-#### Response
-
-```json
-{
-  "data": {
-    "id": 10,
-    "status": "CANCELLED",
-    ...
-  }
-}
-```
-
-#### Error Responses
-
-| Status | Code     | Message                                |
-| ------ | -------- | -------------------------------------- |
-| 404    | AppError | Enrollment not found.                  |
-| 400    | AppError | Only active enrollments can be cancelled. |
-
----
-
-### POST /api/enrollments/:id/complete
-
-Marks an active enrollment as completed. Sets status to `COMPLETED` and adds the course's `pointsAwarded` to the collaborator's score.
-
-#### Response
-
-```json
-{
-  "data": {
-    "id": 10,
-    "status": "COMPLETED",
-    ...
-  }
-}
-```
-
-#### Error Responses
-
-| Status | Code     | Message                                |
-| ------ | -------- | -------------------------------------- |
-| 404    | AppError | Enrollment not found.                  |
-| 400    | AppError | Only active enrollments can be completed. |
-
----
-
-## Agent
-
-### POST /api/agent/message
-
-Classifies the collaborator message intent through OpenRouter and executes deterministic backend actions.
-
-#### Request Body
+Body:
 
 ```json
 {
   "collaboratorId": 1,
-  "message": "Enroll me in React Advanced"
+  "message": "Inscribime en React Advanced"
 }
 ```
 
-#### Response
+Notas:
+
+- Intenciones soportadas: `list_courses`, `get_active_enrollments`, `get_completed_courses`, `recommend_courses`, `enroll_course`, `cancel_enrollment`, `complete_enrollment`, `unknown`.
+- El modelo NO escribe base de datos directamente.
+- La API puede responder pidiendo aclaración si la intención es ambigua.
+
+## Respuesta estándar
+
+En general, los endpoints responden con:
 
 ```json
 {
-  "data": {
-    "message": "Enrollment created for React Advanced.",
-    "intent": "enroll_course",
-    "action": "enroll_course",
-    "result": {},
-    "usage": {
-      "promptTokens": 100,
-      "completionTokens": 40,
-      "totalTokens": 140
-    }
-  }
+  "data": {}
 }
 ```
-
-#### Notes
-
-- Supported intents: `list_courses`, `get_active_enrollments`, `get_completed_courses`, `recommend_courses`, `enroll_course`, `cancel_enrollment`, `complete_enrollment`, `unknown`.
-- If the message is ambiguous, the API returns an intent clarification response instead of mutating data.
-- Intent extraction does not mutate the database directly; all actions are executed only by existing deterministic services.
-
-#### Error Responses
-
-| Status | Code                    | Message                                   |
-| ------ | ----------------------- | ----------------------------------------- |
-| 500    | OpenRouterConfigError   | Missing OPENROUTER_API_KEY configuration. |
-| 502    | AgentInvalidModelOutput | Model returned invalid JSON output.       |

@@ -1,22 +1,104 @@
 # Hackathon Compucad
 
-Initial monorepo scaffold for an individual hackathon project focused on an AI training agent for employees.
+Plataforma de capacitación interna asistida por IA para consultar cursos, recomendar opciones y ejecutar acciones de inscripción con validaciones determinísticas de negocio.
 
-## Project overview
+## Resumen
 
-This repository provides a clean foundation for building the Compucad Training Agent. The current scope is intentionally limited to the project structure, developer tooling, backend and frontend setup, local SQLite database, and documentation.
+Este repositorio contiene un monorepo full-stack listo para demo:
 
-## Tech stack
+- Frontend (React) con chat del agente.
+- Backend (Express) con endpoints CRUD, recomendaciones y agente IA.
+- SQLite + Prisma como fuente de verdad en runtime.
+- OpenRouter integrado **solo en backend**.
+
+## Stack tecnológico
 
 - Monorepo: pnpm workspaces
 - Frontend: React + Vite + TypeScript + TailwindCSS
 - Backend: Node.js + Express + TypeScript
-- Database: SQLite (local file, no Docker required)
 - ORM: Prisma
-- Shared package: TypeScript
-- Documentation: Markdown + Mermaid
+- Base de datos: SQLite (archivo local)
+- Documentación: Markdown + Mermaid
 
-## Project structure
+## Levantar el proyecto localmente
+
+### 1) Prerrequisitos
+
+- Node.js `>=20.19.0` (o 22+)
+- pnpm instalado
+
+Si usás `nvm`:
+
+```bash
+nvm use
+```
+
+### 2) Variables de entorno
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+```
+
+Configuración mínima recomendada:
+
+```env
+# apps/api/.env
+DATABASE_URL="file:./prisma/dev.db"
+PORT=3000
+WEB_ORIGIN="http://localhost:5173"
+OPENROUTER_API_KEY="<YOUR_OPENROUTER_API_KEY>"
+OPENROUTER_MODEL="mistralai/mistral-7b-instruct:free"
+
+# apps/web/.env
+VITE_API_URL="http://localhost:3000"
+```
+
+> Seguridad: `OPENROUTER_API_KEY` se configura y utiliza únicamente en backend. No exponerla en frontend.
+
+### 3) Instalar dependencias
+
+```bash
+pnpm install
+```
+
+### 4) Preparar base de datos (migraciones + seed)
+
+```bash
+pnpm db:reset
+```
+
+### 5) Ejecutar frontend + backend
+
+```bash
+pnpm dev
+```
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3000`
+
+## Comandos útiles
+
+```bash
+pnpm dev          # Levanta web + api en paralelo
+pnpm dev:web      # Levanta solo frontend
+pnpm dev:api      # Levanta solo backend
+pnpm db:migrate   # Ejecuta Prisma migrate dev
+pnpm db:reset     # Resetea DB y vuelve a correr seed
+pnpm db:seed      # Importa datos iniciales desde Excel
+pnpm db:studio    # Abre Prisma Studio
+pnpm build        # Build de todos los workspaces
+pnpm typecheck    # Type-check de todos los workspaces
+```
+
+## Arquitectura y principios clave
+
+- El frontend consume únicamente endpoints del backend.
+- El LLM interpreta intención del usuario, pero **no modifica la base directamente**.
+- Las acciones reales (inscribir, cancelar, completar) se ejecutan por servicios determinísticos del backend.
+- Reglas críticas de negocio se validan siempre del lado servidor.
+
+## Estructura del repositorio
 
 ```text
 hackathon-compucad/
@@ -32,75 +114,11 @@ hackathon-compucad/
 └─ README.md
 ```
 
-## Local setup
+## Documentación
 
-1. Install pnpm if it is not available yet.
-2. Use Node.js 20.19+ or 22+ for this project:
-
-   ```bash
-   nvm use
-   ```
-
-   If you do not use nvm, install a compatible version manually.
-
-3. Copy the environment files for each app:
-
-   ```bash
-   cp apps/api/.env.example apps/api/.env
-   cp apps/web/.env.example apps/web/.env
-   ```
-
-   Then set your OpenRouter API key in `apps/api/.env`:
-
-   ```bash
-   OPENROUTER_API_KEY="<your-openrouter-key>"
-   # Optional override (default is a free model)
-   OPENROUTER_MODEL="mistralai/mistral-7b-instruct:free"
-   ```
-4. Install dependencies:
-
-   ```bash
-   pnpm install
-   ```
-
-5. Create and seed the local SQLite database:
-
-   ```bash
-   pnpm db:reset
-   ```
-
-6. Start both applications:
-
-   ```bash
-   pnpm dev
-   ```
-
-## Useful commands
-
-```bash
-pnpm dev          # Run web and api in parallel
-pnpm dev:web      # Run frontend only
-pnpm dev:api      # Run backend only
-pnpm db:migrate   # Run Prisma migrate dev
-pnpm db:reset     # Reset the database and rerun seed
-pnpm db:seed      # Import Excel data into SQLite
-pnpm db:studio    # Open Prisma Studio
-pnpm build        # Build all workspace packages
-pnpm typecheck    # Type-check all workspace packages
-```
-
-## Node version note
-
-The scaffold is configured for modern supported runtimes (`>=20.19.0`).
-
-## Database note
-
-The project uses SQLite for local development and demos. This eliminates Docker dependencies and makes the setup more reliable for hackathon presentations. The Prisma schema and seed script are designed to be portable if a production database is needed later.
-
-`docker-compose.yml` may remain in the repository as a legacy artifact, but it is not required for local development, demo flows, or runtime execution.
-
-## Available documentation
-
-- `docs/architecture.md`
+- `docs/arquitectura.md`
 - `docs/endpoints.md`
+- `docs/agente-ia.md`
+- `docs/reglas-negocio.md`
+- `docs/demo.md`
 - `docs/decisions.md`
