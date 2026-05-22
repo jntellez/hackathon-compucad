@@ -1,0 +1,115 @@
+{
+  "recommendedDefault": "openrouter/free",
+  "notes": [
+    "Usa openrouter/free si quieres que OpenRouter seleccione automáticamente un modelo gratuito disponible.",
+    "Usa un modelo específico con sufijo :free si quieres probar estabilidad, velocidad o calidad.",
+    "Los modelos gratuitos pueden cambiar, saturarse o tener rate limits.",
+    "Para usuarios sin créditos comprados, OpenRouter documenta un límite de 50 requests diarios para modelos :free; con al menos 10 créditos, el límite sube a 1000 requests diarios."
+  ],
+  "models": [
+    {
+      "id": "openrouter/free",
+      "label": "Free router",
+      "useCase": "Fallback general para demo",
+      "priority": 1
+    },
+    {
+      "id": "openrouter/owl-alpha",
+      "label": "Owl Alpha",
+      "useCase": "Agente, razonamiento y respuestas generales",
+      "priority": 2
+    },
+    {
+      "id": "baidu/cobuddy:free",
+      "label": "Baidu Cobuddy",
+      "useCase": "Coding, agentes y tareas estructuradas",
+      "priority": 3
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "label": "NVIDIA Nemotron 3 Nano Omni Reasoning",
+      "useCase": "Razonamiento y clasificación de intención",
+      "priority": 4
+    },
+    {
+      "id": "poolside/laguna-m.1:free",
+      "label": "Poolside Laguna M",
+      "useCase": "Coding y flujos de agente",
+      "priority": 5
+    },
+    {
+      "id": "poolside/laguna-xs.2:free",
+      "label": "Poolside Laguna XS",
+      "useCase": "Modelo ligero para respuestas rápidas",
+      "priority": 6
+    },
+    {
+      "id": "deepseek/deepseek-r1:free",
+      "label": "DeepSeek R1",
+      "useCase": "Razonamiento",
+      "priority": 7
+    },
+    {
+      "id": "deepseek/deepseek-chat-v3-0324:free",
+      "label": "DeepSeek Chat V3",
+      "useCase": "Chat general",
+      "priority": 8
+    },
+    {
+      "id": "qwen/qwen3-235b-a22b:free",
+      "label": "Qwen3 235B A22B",
+      "useCase": "Razonamiento general",
+      "priority": 9
+    },
+    {
+      "id": "qwen/qwen3-coder:free",
+      "label": "Qwen3 Coder",
+      "useCase": "Código y tareas técnicas",
+      "priority": 10
+    },
+    {
+      "id": "meta-llama/llama-4-maverick:free",
+      "label": "Llama 4 Maverick",
+      "useCase": "Chat general",
+      "priority": 11
+    },
+    {
+      "id": "meta-llama/llama-4-scout:free",
+      "label": "Llama 4 Scout",
+      "useCase": "Chat general ligero",
+      "priority": 12
+    },
+    {
+      "id": "mistralai/mistral-small-3.1-24b-instruct:free",
+      "label": "Mistral Small 3.1 24B Instruct",
+      "useCase": "Instrucciones y chat general",
+      "priority": 13
+    },
+    {
+      "id": "google/gemma-3-27b-it:free",
+      "label": "Gemma 3 27B IT",
+      "useCase": "Instrucciones generales",
+      "priority": 14
+    },
+    {
+      "id": "openai/gpt-oss-120b:free",
+      "label": "GPT OSS 120B",
+      "useCase": "Razonamiento general",
+      "priority": 15
+    },
+    {
+      "id": "openai/gpt-oss-20b:free",
+      "label": "GPT OSS 20B",
+      "useCase": "Respuestas rápidas",
+      "priority": 16
+    }
+  ],
+  "quickTestMessages": [
+    "¿Qué cursos me recomiendas?",
+    "¿A qué cursos estoy inscrito?",
+    "¿Qué cursos ya completé?",
+    "Quiero tomar un curso",
+    "Ahora mismo, ¿me puedo inscribir a algún curso?",
+    "Inscríbeme al curso de React fundamentos"
+  ]
+}
