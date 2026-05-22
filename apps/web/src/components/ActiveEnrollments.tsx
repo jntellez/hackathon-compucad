@@ -11,7 +11,7 @@ type ActiveEnrollmentsProps = {
 export function ActiveEnrollments({ enrollments, hasSelection, loading, onComplete, onCancel }: ActiveEnrollmentsProps) {
   return (
     <div className="space-y-2">
-      <h2 className="text-lg font-medium text-white">Active Enrollments ({enrollments.length})</h2>
+      <h2 className="text-lg font-medium text-white">Active Enrollments</h2>
       {enrollments.length === 0 ? (
         <p className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-500">
           {hasSelection ? 'No active enrollments' : 'Select a collaborator to see enrollments'}

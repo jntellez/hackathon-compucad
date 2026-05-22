@@ -20,7 +20,7 @@ export function AgentChat({ collaboratorId, collaboratorName, onAgentSuccess }: 
   }, [collaboratorId, collaboratorName]);
 
   return (
-    <section className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <section className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4 lg:min-h-[540px]">
       <div className="flex items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-medium text-white">AI Agent Chat</h2>
@@ -38,7 +38,7 @@ export function AgentChat({ collaboratorId, collaboratorName, onAgentSuccess }: 
 
       {error && <p className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2 text-xs text-rose-200">{error}</p>}
 
-      <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border border-slate-800 bg-slate-950 p-3">
+      <div className="h-[320px] space-y-2 overflow-y-auto rounded-md border border-slate-800 bg-slate-950 p-3 lg:h-[380px]">
         {messages.length === 0 ? (
           <p className="text-sm text-slate-500">Send a message to ask for enrollments, history, recommendations, or actions.</p>
         ) : (

@@ -8,7 +8,7 @@ type CompletedHistoryProps = {
 export function CompletedHistory({ enrollments, hasSelection }: CompletedHistoryProps) {
   return (
     <div className="space-y-2">
-      <h2 className="text-lg font-medium text-white">Completed ({enrollments.length})</h2>
+      <h2 className="text-lg font-medium text-white">Completed</h2>
       {enrollments.length === 0 ? (
         <p className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-500">
           {hasSelection ? 'No completed courses yet' : 'Select a collaborator to see history'}

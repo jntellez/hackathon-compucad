@@ -55,11 +55,9 @@ export default function App() {
         <CollaboratorSummary collaborator={selectedCollaborator} />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         <section className="flex flex-col">
-          <h2 className="mb-3 text-lg font-medium text-white">
-            Available Courses <span className="text-sm font-normal text-slate-500">({filteredCourses.length})</span>
-          </h2>
+          <h2 className="mb-3 text-lg font-medium text-white">Available Courses</h2>
 
           <CourseFilters
             filters={filters}
@@ -79,6 +77,12 @@ export default function App() {
         </section>
 
         <section className="space-y-4">
+          <AgentChat
+            collaboratorId={selectedId}
+            collaboratorName={selectedCollaborator?.name}
+            onAgentSuccess={handleAgentSuccess}
+          />
+
           <RecommendationsList
             recommendations={recommendations}
             hasSelection={!!selectedCollaborator}
@@ -98,12 +102,6 @@ export default function App() {
           <CompletedHistory
             enrollments={completedEnrollments}
             hasSelection={!!selectedCollaborator}
-          />
-
-          <AgentChat
-            collaboratorId={selectedId}
-            collaboratorName={selectedCollaborator?.name}
-            onAgentSuccess={handleAgentSuccess}
           />
         </section>
       </div>
