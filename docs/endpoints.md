@@ -2,11 +2,23 @@
 
 Base URL local: `http://localhost:3000/api`
 
+> Nota: el frontend consume solo estos endpoints del backend. No llama OpenRouter ni base de datos directamente.
+
 ## Salud
 
 ### `GET /health`
 
 Verifica que la API esté operativa.
+
+Respuesta ejemplo:
+
+```json
+{
+  "data": {
+    "status": "ok"
+  }
+}
+```
 
 ## Cursos
 
@@ -92,6 +104,17 @@ Notas:
 - Intenciones soportadas: `list_courses`, `get_active_enrollments`, `get_completed_courses`, `recommend_courses`, `enroll_course`, `cancel_enrollment`, `complete_enrollment`, `unknown`.
 - El modelo NO escribe base de datos directamente.
 - La API puede responder pidiendo aclaración si la intención es ambigua.
+
+Respuesta ejemplo:
+
+```json
+{
+  "data": {
+    "intent": "enroll_course",
+    "message": "Inscripción creada correctamente"
+  }
+}
+```
 
 ## Respuesta estándar
 

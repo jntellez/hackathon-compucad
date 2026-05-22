@@ -24,6 +24,7 @@ sequenceDiagram
   D-->>S: Resultado
   S-->>A: Resultado de negocio
   A-->>W: Respuesta final
+  W->>W: Refresca estado/UI
 ```
 
 ## Principios de seguridad y control
@@ -32,6 +33,33 @@ sequenceDiagram
 2. El frontend nunca llama OpenRouter directamente.
 3. El LLM interpreta intención, pero la decisión final la toma el backend.
 4. Cualquier cambio de datos pasa por validaciones determinísticas.
+
+## Rol y límites del LLM
+
+- El LLM **clasifica intención** y extrae entidades del mensaje del usuario.
+- El LLM **no ejecuta SQL ni Prisma** y no decide políticas críticas.
+- Si hay ambigüedad, el backend responde pidiendo aclaración antes de accionar.
+
+## Cómo se ejecutan acciones reales
+
+1. El controlador recibe `POST /api/agent/message`.
+2. El servicio de agente consulta OpenRouter para interpretar el mensaje.
+3. Con la intención detectada, el backend invoca servicios de dominio (cursos, inscripciones, recomendaciones).
+4. Esos servicios validan reglas y recién después persisten con Prisma/SQLite.
+
+## Uso de tokens y formato de respuestas
+
+- Los tokens del proveedor IA se consumen solo en backend.
+- Las respuestas críticas al usuario (errores de política, estados y acciones ejecutadas) se formatean en backend para mantener consistencia y auditabilidad.
+
+## Flujo resumido para defensa
+
+1. Frontend llama al backend (`POST /api/agent/message`).
+2. Backend usa OpenRouter para interpretar intención.
+3. El LLM propone intent + entidades; no ejecuta reglas críticas.
+4. Servicios determinísticos aplican políticas y ejecutan la acción.
+5. Prisma accede a SQLite para lectura/escritura.
+6. Backend responde y el frontend refresca la UI.
 
 ## Intenciones soportadas
 

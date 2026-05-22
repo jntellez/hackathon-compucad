@@ -39,6 +39,12 @@ flowchart LR
 3. El LLM clasifica intención; no ejecuta operaciones críticas por sí mismo.
 4. Inscripciones/cancelaciones/finalizaciones se resuelven por servicios determinísticos.
 
+## Decisiones técnicas clave
+
+- **SQLite local para demo**: reduce fricción operativa y evita depender de Docker.
+- **Monorepo con pnpm workspaces**: simplifica coordinación entre frontend, backend y contratos compartidos.
+- **OpenRouter aislado en backend**: protege tokens y mantiene control de ejecución real en servidor.
+
 ## Módulos backend
 
 - `health`

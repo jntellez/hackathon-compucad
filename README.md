@@ -114,11 +114,17 @@ hackathon-compucad/
 └─ README.md
 ```
 
-## Documentación
+## Validación rápida
+
+```bash
+pnpm typecheck
+pnpm build
+```
+
+## Documentación final
 
 - `docs/arquitectura.md`
 - `docs/endpoints.md`
 - `docs/agente-ia.md`
 - `docs/reglas-negocio.md`
 - `docs/demo.md`
-- `docs/decisions.md`

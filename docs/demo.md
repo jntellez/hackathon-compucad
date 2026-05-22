@@ -17,7 +17,7 @@ pnpm dev
 
 3. Confirmar salud backend: `GET /api/health`.
 
-## Script sugerido de presentación (7-10 minutos)
+## Script sugerido de presentación (3-5 minutos)
 
 1. **Contexto rápido**
    - Monorepo, frontend React, backend Express, SQLite + Prisma.

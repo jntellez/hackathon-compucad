@@ -21,3 +21,12 @@ Estas validaciones se ejecutan de forma determinística en backend antes de crea
 
 - Estas reglas no dependen del prompt ni del modelo.
 - Si una regla falla, la API responde error de política y no se crea la inscripción.
+
+## Recomendación: elegible vs bloqueado
+
+Para recomendaciones y UX, se puede separar la salida en dos grupos:
+
+- **Elegible**: cursos que cumplen todas las reglas para poder inscribirse.
+- **Bloqueado**: cursos con motivo explícito de bloqueo (nivel insuficiente, curso sin cupo, colaborador inactivo, etc.).
+
+Esta separación mejora trazabilidad funcional sin delegar decisiones al modelo.

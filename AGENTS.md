@@ -76,8 +76,8 @@ These checks belong in backend services and policy validation logic, never in pr
 
 - Keep documentation concise, practical, and specific to this project.
 - Update `docs/endpoints.md` when routes change.
-- Update `docs/architecture.md` when system structure changes.
-- Update `docs/decisions.md` when important technical decisions are made.
+- Update `docs/arquitectura.md` when system structure changes.
+- Reflect important technical decisions in `docs/arquitectura.md` or `README.md` when relevant.
 - Prefer diagrams and short explanation tables over long prose.
 
 ## 8. Current project priority
